@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asset Automation SG - Login</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <h1>Asset Automation SG</h1>
+</header>
+
+<div class="container">
+  <div id="loginView" class="card">
+    <h2>Login</h2>
+    <label>Username</label>
+    <input id="username" placeholder="Username">
+    <label>Password</label>
+    <input id="password" type="password" placeholder="Password">
+    <div class="small" id="loginError" style="color:var(--danger);min-height:18px;"></div>
+    <div style="margin-top:12px; display:flex; gap:8px;">
+      <button class="btn" onclick="login()">Login</button>
+    </div>
+    <div class="small" style="margin-top:10px;color:#555">
+      Admin: <strong>AssetAdmin / shan</strong><br>
+      Viewer: <strong>Asset / best</strong>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

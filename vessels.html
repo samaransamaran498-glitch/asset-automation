@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asset Automation SG - Vessels</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <h1>Vessel Management</h1>
+  <div id="headerButtons"></div>
+</header>
+
+<div class="container">
+
+  <!-- VESSELS VIEW -->
+  <div id="vesselsView" class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+      <h2>VMS System Password</h2>
+      <div class="right">
+        <input id="searchVessel" placeholder="Search vessels..." style="width:260px;" oninput="filterVessels()">
+      </div>
+    </div>
+    <table id="vesselsTable">
+      <thead>
+        <tr id="tableHeader">
+          <th>Vessel</th>
+          <th>Old Password</th>
+          <th>New Password</th>
+          <th class="hidden" id="adminActionsHeader">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="vesselsBody"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- MODAL -->
+<div id="modalBackdrop" class="modal-backdrop hidden">
+  <div class="modal-card">
+    <h3 id="modalTitle">Add Vessel</h3>
+    <label>Vessel Name</label>
+    <input id="mName">
+    <label>Old Password</label>
+    <input id="mOld">
+    <label>New Password</label>
+    <input id="mNew">
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px;">
+      <button class="btn ghost small" onclick="closeModal()">Cancel</button>
+      <button class="btn small" onclick="saveModal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div id="settingsBackdrop" class="modal-backdrop hidden">
+  <div class="modal-card">
+    <h3>Settings</h3>
+    <button class="btn small" onclick="openAddModal()">Add Vessel</button>
+    <button class="btn small danger" onclick="enableDeleteMode()">Enable Delete Mode</button>
+    <button class="btn small" onclick="addNewColumn()">Add New Column</button>
+    <div style="margin-top:12px;text-align:right;">
+      <button class="btn ghost small" onclick="closeSettings()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
