@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Asset Automation SG - VMS System Management</title>
+<style>
+  /* Common colors and fonts */
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    background: #1a2935;
+    color: #f0f0f0;
+  }
+  header {
+    background-color: #0066cc;
+    padding: 1rem;
+    text-align: center;
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #fff;
+  }
+  .container {
+    max-width: 600px;
+    margin: 2rem auto;
+    background: #223544;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 0 15px #003366aa;
+  }
+  label {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+  }
+  input[type="text"],
+  input[type="password"] {
+    width: 100%;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    border: none;
+    border-radius: 4px;
+  }
+  button {
+    background-color: #0080ff;
+    color: white;
+    padding: 0.7rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  button:hover {
+    background-color: #005bb5;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+  }
+  th, td {
+    padding: 0.6rem;
+    text-align: left;
+    border-bottom: 1px solid #444;
+  }
+  th {
+    background-color: #004080;
+  }
+  tr:hover {
+    background-color: #335577;
+  }
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  .top-bar .buttons {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .icon-btn {
+    background: none;
+    border: none;
+    color: #f0f0f0;
+    font-size: 1.3rem;
+    cursor: pointer;
+  }
+  .icon-btn:hover {
+    color: #00bfff;
+  }
+  .settings-panel {
+    background: #223544;
+    border: 1px solid #004080;
+    padding: 1rem;
+    margin-top: 1rem;
+    border-radius: 6px;
+  }
+  .settings-panel label {
+    margin-top: 0.5rem;
+  }
+  .hidden {
+    display: none;
+  }
+  .error {
+    color: #ff5555;
+    margin-bottom: 1rem;
+  }
+  /* Scroll for vessel list if too long */
+  .vessel-list-container {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  /* Inputs in table for new password */
+  input.pass-input {
+    width: 95%;
+    padding: 0.3rem;
+    border-radius: 3px;
+    border: none;
+  }
+  /* Disabled input styling */
+  input:disabled {
+    background-color: #444;
+    color: #aaa;
+  }
+</style>
+</head>
+<body>
+
+<header id="page-title">Asset Automation SG</header>
+
+<!-- Login Page -->
+<div id="login-page" class="container">
+  <div id="login-error" class="error hidden"></div>
+  <label for="user-id">User ID:</label>
+  <input type="text" id="user-id" autocomplete="username" />
+  
+  <label for="password">Password:</label>
+  <input type="password" id="password" autocomplete="current-password" />
+  
+  <button id="login-btn">Login</button>
+</div>
+
+<!-- VMS Management Page -->
+<div id="vms-page" class="container hidden">
+  <div class="top-bar">
+    <div><strong>Logged in as: <span id="logged-in-user"></span></strong></div>
+    <div class="buttons">
+      <button id="settings-btn" class="icon-btn" title="Settings ⚙️">&#9881;</button>
+      <button id="logout-btn" class="icon-btn" title="Log Out 🔒">&#128274;</button>
+    </div>
+  </div>
+  
+  <h2>VMS System Management</h2>
+  
+  <div class="vessel-list-container">
+    <table id="vessel-table">
+      <thead>
+        <tr>
+          <th>Vessel</th>
+          <th>Old Password</th>
+          <th>New Password</th>
+          <th class="settings-col hidden">Delete</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Vessel rows go here -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Settings Panel -->
+  <div id="settings-panel" class="settings-panel hidden">
+    <h3>Settings</h3>
+    <label for="new-vessel-name">Add New Vessel:</label>
+    <input type="text" id="new-vessel-name" placeholder="Vessel Name" />
+    <label for="new-vessel-password">Password:</label>
+    <input type="text" id="new-vessel-password" placeholder="Password" />
+    <button id="add-vessel-btn">Add Vessel</button>
+  </div>
+</div>
+
+<script>
+  // Users and roles
+  const users = [
+    { id: 'admin', password: 'admin123', role: 'admin' },
+    { id: 'viewer', password: 'viewer123', role: 'viewer' }
+  ];
+
+  // Initial vessels (10 example vessels)
+  const initialVessels = [
+    { name: "Vessel 1", oldPassword: "oldpass1", newPassword: "newpass1" },
+    { name: "Vessel 2", oldPassword: "oldpass2", newPassword: "newpass2" },
+    { name: "Vessel 3", oldPassword: "oldpass3", newPassword: "newpass3" },
+    { name: "Vessel 4", oldPassword: "oldpass4", newPassword: "newpass4" },
+    { name: "Vessel 5", oldPassword: "oldpass5", newPassword: "newpass5" },
+    { name: "Vessel 6", oldPassword: "oldpass6", newPassword: "newpass6" },
+    { name: "Vessel 7", oldPassword: "oldpass7", newPassword: "newpass7" },
+    { name: "Vessel 8", oldPassword: "oldpass8", newPassword: "newpass8" },
+    { name: "Vessel 9", oldPassword: "oldpass9", newPassword: "newpass9" },
+    { name: "Vessel 10", oldPassword: "oldpass10", newPassword: "newpass10" }
+  ];
+
+  // DOM elements
+  const loginPage = document.getElementById('login-page');
+  const vmsPage = document.getElementById('vms-page');
+  const pageTitle = document.getElementById('page-title');
+  const loginBtn = document.getElementById('login-btn');
+  const userIdInput = document.getElementById('user-id');
+  const passwordInput = document.getElementById('password');
+  const loginError = document.getElementById('login-error');
+  const loggedInUserSpan = document.getElementById('logged-in-user');
+  const logoutBtn = document.getElementById('logout-btn');
+  const settingsBtn = document.getElementById('settings-btn');
+  const settingsPanel = document.getElementById('settings-panel');
+  const addVesselBtn = document.getElementById('add-vessel-btn');
+  const newVesselNameInput = document.getElementById('new-vessel-name');
+  const newVesselPasswordInput = document.getElementById('new-vessel-password');
+  const vesselTableBody = document.querySelector('#vessel-table tbody');
+
+  let currentUser = null;
+  let vessels = [];
+
+  // Load vessels from localStorage or initialize
+  function loadVessels() {
+    const stored = localStorage.getItem('vessels');
+    if (stored) {
+      vessels = JSON.parse(stored);
+    } else {
+      vessels = [...initialVessels];
+      saveVessels();
+    }
+  }
+
+  function saveVessels() {
+    localStorage.setItem('vessels', JSON.stringify(vessels));
+  }
+
+  // Render vessels in the table
+  function renderVessels() {
+    vesselTableBody.innerHTML = '';
+    vessels.forEach((vessel, index) => {
+      const tr = document.createElement('tr');
+
+      // Vessel name
+      const nameTd = document.createElement('td');
+      nameTd.textContent = vessel.name;
+      tr.appendChild(nameTd);
+
+      // Old Password (readonly)
+      const oldPassTd = document.createElement('td');
+      const oldPassInput = document.createElement('input');
+      oldPassInput.type = 'text';
+      oldPassInput.value = vessel.oldPassword;
+      oldPassInput.disabled = true;
+      oldPassInput.className = 'pass-input';
+      oldPassTd.appendChild(oldPassInput);
+      tr.appendChild(oldPassTd);
+
+      // New Password (editable if admin)
+      const newPassTd = document.createElement('td');
+      const newPassInput = document.createElement('input');
+      newPassInput.type = 'text';
+      newPassInput.value = vessel.newPassword;
+      newPassInput.className = 'pass-input';
+      newPassInput.disabled = currentUser.role !== 'admin';
+      newPassInput.addEventListener('change', () => {
+        vessels[index].newPassword = newPassInput.value;
+        saveVessels();
+      });
+      newPassTd.appendChild(newPassInput);
+      tr.appendChild(newPassTd);
+
+      // Delete button (only for admin)
+      const deleteTd = document.createElement('td');
+      deleteTd.className = 'settings-col';
+      if (currentUser.role === 'admin') {
+        deleteTd.classList.remove('hidden');
+        const delBtn = document.createElement('button');
+        delBtn.textContent = 'Delete';
+        delBtn.style.backgroundColor = '#cc3300';
+        delBtn.style.color = '#fff';
+        delBtn.style.border = 'none';
+        delBtn.style.borderRadius = '4px';
+        delBtn.style.padding = '0.3rem 0.6rem';
+        delBtn.style.cursor = 'pointer';
+        delBtn.addEventListener('click', () => {
+          if (confirm(`Delete vessel "${vessel.name}"?`)) {
+            vessels.splice(index, 1);
+            saveVessels();
+            renderVessels();
+          }
+        });
+        deleteTd.appendChild(delBtn);
+      } else {
+        deleteTd.classList.add('hidden');
+      }
+      tr.appendChild(deleteTd);
+
+      vesselTableBody.appendChild(tr);
+    });
+  }
+
+  // Show/hide pages
+  function showLoginPage() {
+    pageTitle.textContent = 'Asset Automation SG';
+    loginPage.classList.remove('hidden');
+    vmsPage.classList.add('hidden');
+    settingsPanel.classList.add('hidden');
+    loginError.classList.add('hidden');
+    userIdInput.value = '';
+    passwordInput.value = '';
+  }
+
+  function showVMSPage() {
+    pageTitle.textContent = 'VMS System Management';
+    loginPage.classList.add('hidden');
+    vmsPage.classList.remove('hidden');
+    loggedInUserSpan.textContent = currentUser.id + ' (' + currentUser.role + ')';
+
+    if (currentUser.role === 'admin') {
+      settingsBtn.style.display = 'inline-block';
+    } else {
+      settingsBtn.style.display = 'none';
+      settingsPanel.classList.add('hidden');
+    }
+
+    renderVessels();
+  }
+
+  // Login handler
+  loginBtn.addEventListener('click', () => {
+    const id = userIdInput.value.trim();
+    const pass = passwordInput.value.trim();
+
+    const user = users.find(u => u.id === id && u.password === pass);
+    if (!user) {
+      loginError.textContent = 'Invalid user ID or password';
+      loginError.classList.remove('hidden');
+      return;
+    }
+
+    currentUser = user;
+    loadVessels();
+    showVMSPage();
+  });
+
+  // Logout
+  logoutBtn.addEventListener('click', () => {
+    if (confirm('Are you sure you want to log out?')) {
+      currentUser = null;
+      showLoginPage();
+    }
+  });
+
+  // Settings toggle
+  settingsBtn.addEventListener('click', () => {
+    if (settingsPanel.classList.contains('hidden')) {
+      settingsPanel.classList.remove('hidden');
+    } else {
+      settingsPanel.classList.add('hidden');
+    }
+  });
+
+  // Add vessel
+  addVesselBtn.addEventListener('click', () => {
+    const name = newVesselNameInput.value.trim();
+    const pass = newVesselPasswordInput.value.trim();
+
+    if (!name || !pass) {
+      alert('Please enter vessel name and password.');
+      return;
+    }
+
+    // Check if vessel name already exists
+    if (vessels.some(v => v.name.toLowerCase() === name.toLowerCase())) {
+      alert('Vessel name already exists.');
+      return;
+    }
+
+    if (vessels.length >= 50) {
+      alert('Maximum number of vessels (50) reached.');
+      return;
+    }
+
+    vessels.push({ name, oldPassword: '', newPassword: pass });
+    saveVessels();
+    renderVessels();
+
+    // Clear inputs
+    newVesselNameInput.value = '';
+    newVesselPasswordInput.value = '';
+  });
+
+  // Initial page setup
+  showLoginPage();
+</script>
+
+</body>
+</html>
+
